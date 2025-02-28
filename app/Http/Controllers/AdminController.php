@@ -123,23 +123,19 @@ class AdminController extends Controller
 
     public function updatePost(Request $request, $idpost)
     {
-        // Validasi input
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'date' => 'required|date',
-            'username' => 'required|string|exists:account,username', // Pastikan username ada di tabel account
+            'username' => 'required|string|exists:account,username', 
         ]);
 
-        // Cari post berdasarkan primary key (idpost)
         $post = Post::where('idpost', $idpost)->first();
 
-        // Jika data tidak ditemukan, kembalikan error
         if (!$post) {
             return redirect()->back()->withErrors(['error' => 'Post tidak ditemukan']);
         }
 
-        // Update data post
         $post->update([
             'title' => $request->title,
             'content' => $request->content,
@@ -153,10 +149,12 @@ class AdminController extends Controller
 
     public function deletePost(Request $request)
     {
-        $post = Post::find($request->id);
+        $post = Post::find($request->idpost);
+
+        // dd($post);
 
         $post->delete();
 
-        return redirect()->intended('/admin');
+        return redirect()->intended('/admin/post');
     }
 }

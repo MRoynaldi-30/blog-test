@@ -9,6 +9,7 @@
 </head>
 <body>
     <h1>Selamat Datang Author</h1>
-    <a href="{{ route('logout') }}">Logout</a>
+    <a href="{{ route('author.posts') }}" class="bg-green-200">kelola post</a>
+    <a href="{{ route('logout') }}" class="bg-red-200">logout</a>
 </body>
 </html>
