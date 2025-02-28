@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\Account;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -14,55 +15,84 @@ class AdminController extends Controller
 {
     public function index()
     {
-        dd(Auth::user()); 
+        // dd(Auth::user()); 
         return view('admin.index');
+    }
+
+    public function kelolaAkun()
+    {
+        $accounts = Account::all();
+        return view('admin.user', compact('accounts'));
     }
 
     public function createAccount(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'username' => 'required|string|max:255|unique:account',
+            // 'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string',
+            'role' => 'required|in:admin,author',
         ]);
 
-        $user = Account::create([
+        Account::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'username' => $request->username,
+            // 'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role,
         ]);
+        return redirect()->route('admin.dashboard')->with('success', 'Akun berhasil dibuat!');
+    }
 
-        Auth::login($user);
-
-        $request->session()->regenerate();
-
-        return redirect()->intended('/admin');
+    public function editAccount(Request $request)
+    {
+        $accounts = Account::find($request->id);
+        // dd($accounts);
+        return view('admin.edit', compact('accounts'));
     }
 
     public function updateAccount(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255',
-        ]);
+        $account = Account::where('username', $request->username)->firstOrFail();
 
-        $user = Auth::user();
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'username' => [
+            'required',
+            'string',
+            'max:255',
+            Rule::unique('account', 'username')->ignore($account->username, 'username'),
+        ],
+        'password' => 'nullable|string',
+        'role' => 'required|in:admin,author',
+    ]);
 
-        $user->name = $request->name;
-        $user->email = $request->email;
+    $account->update([
+        'name' => $request->name,
+        'username' => $request->username,
+        'password' => $request->password ? Hash::make($request->password) : $account->password,
+        'role' => $request->role,
+    ]);
 
-        $user->save();
-
-        return redirect()->intended('/admin');
+    return redirect()->intended('/admin')->with('success', 'Akun berhasil diperbarui!');
     }
 
     public function deleteAccount(Request $request)
     {
-        $user = Auth::user();
+        $account = Account::find($request->id);
 
-        $user->delete();
+        $account->delete();
 
         return redirect()->intended('/admin');
+    }
+
+    // post admin
+    public function post()
+    {
+        $posts = Post::all();
+        $accounts = Account::all();
+        return view('admin.post', compact('posts', 'accounts'));
     }
 
     public function createPost(Request $request)
@@ -81,7 +111,7 @@ class AdminController extends Controller
             'username' => $request->username,
         ]);
 
-        return redirect()->intended('/admin');
+        return redirect()->intended('/admin/post');
     }
 
     public function updatePost(Request $request)
@@ -102,7 +132,7 @@ class AdminController extends Controller
 
         $post->save();
 
-        return redirect()->intended('/admin');
+        return redirect()->intended('/admin/post');
     }
 
     public function deletePost(Request $request)

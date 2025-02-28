@@ -10,5 +10,8 @@
 <body>
     <h1>Selamat Datang Admin</h1>
     <a href="{{ route('logout') }}">Logout</a>
+    <a href="{{ route('admin.user') }}" class="bg-green-200">kelola user User</a>
+
+    <a href="{{ route('admin.post') }}" class="bg-green-200">kelola post Author</a>
 </body>
 </html>
