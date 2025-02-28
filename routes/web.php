@@ -25,4 +25,8 @@ Route::get('/admin/account/delete/{id}', [AdminController::class, 'deleteAccount
 Route::get('/admin/post', [AdminController::class, 'post'])->name('admin.post');
 Route::post('/admin/post', [AdminController::class, 'createPost'])->name('admin.post.create');
 
+Route::get('/admin/post/edit/{idpost}', [AdminController::class, 'editPost'])->name('admin.post.edit');
+Route::put('/admin/post/update/{idpost}', [AdminController::class, 'updatePost'])->name('admin.post.update');
+
+
 Route::get('/author', [AuthorController::class, 'index'])->name('author.dashboard');

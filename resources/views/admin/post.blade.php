@@ -38,6 +38,10 @@
                 <td>{{ $post->content }}</td>
                 <td>{{ $post->date }}</td>
                 <td>{{ $post->username }}</td>
+                <td>
+                    <a href="{{ route('admin.post.edit', $post->idpost) }}">Edit</a>
+                    {{-- <a href="{{ route('admin.post.delete', $post->idpost) }}">Delete</a> --}}
+                </td>
             </tr>
         @endforeach
     </table>

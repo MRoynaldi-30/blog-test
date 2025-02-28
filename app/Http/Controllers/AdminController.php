@@ -56,26 +56,26 @@ class AdminController extends Controller
     {
         $account = Account::where('username', $request->username)->firstOrFail();
 
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'username' => [
-            'required',
-            'string',
-            'max:255',
-            Rule::unique('account', 'username')->ignore($account->username, 'username'),
-        ],
-        'password' => 'nullable|string',
-        'role' => 'required|in:admin,author',
-    ]);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('account', 'username')->ignore($account->username, 'username'),
+            ],
+            'password' => 'nullable|string',
+            'role' => 'required|in:admin,author',
+        ]);
 
-    $account->update([
-        'name' => $request->name,
-        'username' => $request->username,
-        'password' => $request->password ? Hash::make($request->password) : $account->password,
-        'role' => $request->role,
-    ]);
+        $account->update([
+            'name' => $request->name,
+            'username' => $request->username,
+            'password' => $request->password ? Hash::make($request->password) : $account->password,
+            'role' => $request->role,
+        ]);
 
-    return redirect()->intended('/admin')->with('success', 'Akun berhasil diperbarui!');
+        return redirect()->intended('/admin')->with('success', 'Akun berhasil diperbarui!');
     }
 
     public function deleteAccount(Request $request)
@@ -114,26 +114,42 @@ class AdminController extends Controller
         return redirect()->intended('/admin/post');
     }
 
-    public function updatePost(Request $request)
+    public function editPost(Request $request)
     {
+        $post = Post::find($request->idpost);
+        $accounts = Account::all();
+        return view('admin.post-edit', compact('post', 'accounts'));
+    }
+
+    public function updatePost(Request $request, $idpost)
+    {
+        // Validasi input
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'date' => 'required|date',
-            'username' => 'required|string',
+            'username' => 'required|string|exists:account,username', // Pastikan username ada di tabel account
         ]);
 
-        $post = Post::find($request->id);
+        // Cari post berdasarkan primary key (idpost)
+        $post = Post::where('idpost', $idpost)->first();
 
-        $post->title = $request->title;
-        $post->content = $request->content;
-        $post->date = $request->date;
-        $post->username = $request->username;
+        // Jika data tidak ditemukan, kembalikan error
+        if (!$post) {
+            return redirect()->back()->withErrors(['error' => 'Post tidak ditemukan']);
+        }
 
-        $post->save();
+        // Update data post
+        $post->update([
+            'title' => $request->title,
+            'content' => $request->content,
+            'date' => $request->date,
+            'username' => $request->username,
+        ]);
 
-        return redirect()->intended('/admin/post');
+        return redirect()->route('admin.post')->with('success', 'Post berhasil diperbarui');
     }
+
 
     public function deletePost(Request $request)
     {
